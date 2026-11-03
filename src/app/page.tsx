@@ -1,11 +1,14 @@
-
 import Banner from "@/components/Banner";
+import NewArrivals from "@/components/NewArrivals";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#F7F4EE]">
+    <main>
 
       <Banner />
+
+      <NewArrivals />
+
 
     </main>
   );

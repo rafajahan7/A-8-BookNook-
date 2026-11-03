@@ -17,21 +17,21 @@ export default function Banner() {
       description:
         "Explore thousands of stories, discover new authors and find the perfect book for your next reading adventure.",
       image:
-        "https://images.unsplash.com/photo-1495446815901-a7297e633e8d",
+        "/images/banners/banner1.jpg",
     },
     {
       title: "Every Book Opens a New World",
       description:
         "From exciting mysteries to inspiring stories, there is always something wonderful waiting for you.",
       image:
-        "https://images.unsplash.com/photo-1507842217343-583bb7270b66",
+        "/images/banners/banner2.jpg",
     },
     {
       title: "Your Next Chapter Starts Here",
       description:
         "Discover, borrow and enjoy your favorite books with a simple and convenient library experience.",
       image:
-        "https://images.unsplash.com/photo-1512820790803-83ca734da794",
+        "/images/banners/banner3.jpg",
     },
   ];
 
@@ -81,7 +81,7 @@ export default function Banner() {
                 </p>
 
                 <Link
-                  href="/books"
+                  href="/all-books"
                   className="btn border-none bg-[#D9A65A] px-8 text-white hover:bg-white hover:text-[#173B57]"
                 >
                   Browse Books
