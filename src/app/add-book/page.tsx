@@ -1,0 +1,263 @@
+
+"use client";
+
+import { useState } from "react";
+
+export default function AddBook() {
+  const [book, setBook] = useState({
+    title: "",
+    author: "",
+    category: "",
+    image: "",
+    description: "",
+    userName: "Demo User",
+    userEmail: "demo@booknook.com",
+  });
+
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setBook({
+      ...book,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // Upload image to imgbb through Express
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Please select a valid image.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      setUploading(true);
+      setUploadError("");
+
+      const response = await fetch(
+        "http://localhost:8000/api/upload/image",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Image upload failed.");
+      }
+
+      setBook((previousBook) => ({
+        ...previousBook,
+        image: data.imageUrl,
+      }));
+
+    } catch (error) {
+      setUploadError(
+        error instanceof Error ? error.message : "Image upload failed."
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!book.image) {
+      alert("Please upload a book image first.");
+      return;
+    }
+
+    console.log("Book Information:", book);
+
+    alert("Book information is ready! MongoDB connection will be added next.");
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f8f7f3] px-4 py-12">
+      <div className="mx-auto max-w-3xl">
+
+        <div className="mb-8 text-center">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-amber-700">
+            BookNook Library
+          </p>
+
+          <h1 className="text-3xl font-bold text-gray-900 md:text-4xl">
+            Add a New Book
+          </h1>
+
+          <p className="mt-3 text-gray-600">
+            Share a new book with our reading community.
+          </p>
+        </div>
+
+        <div className="rounded-2xl bg-white p-6 shadow-md md:p-10">
+          <form onSubmit={handleSubmit} className="space-y-6">
+
+            <div>
+              <label className="mb-2 block font-medium text-gray-700">
+                Book Title
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={book.title}
+                onChange={handleChange}
+                placeholder="Enter book title"
+                required
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-amber-600"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block font-medium text-gray-700">
+                Author Name
+              </label>
+              <input
+                type="text"
+                name="author"
+                value={book.author}
+                onChange={handleChange}
+                placeholder="Enter author name"
+                required
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-amber-600"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block font-medium text-gray-700">
+                Category
+              </label>
+              <select
+                name="category"
+                value={book.category}
+                onChange={handleChange}
+                required
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-amber-600"
+              >
+                <option value="">Select a category</option>
+                <option value="Fiction">Fiction</option>
+                <option value="Science">Science</option>
+                <option value="History">History</option>
+                <option value="Kids">Kids</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="mb-2 block font-medium text-gray-700">
+                Book Image
+              </label>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={uploading}
+                className="w-full rounded-lg border border-gray-300 px-4 py-3"
+              />
+
+              {uploading && (
+                <p className="mt-2 text-sm text-amber-700">
+                  Uploading image...
+                </p>
+              )}
+
+              {uploadError && (
+                <p className="mt-2 text-sm text-red-600">
+                  {uploadError}
+                </p>
+              )}
+
+              {book.image && (
+                <div className="mt-4">
+                  <p className="mb-2 text-sm font-medium text-green-700">
+                    Image uploaded successfully!
+                  </p>
+
+                  <img
+                    src={book.image}
+                    alt="Book preview"
+                    className="h-48 w-36 rounded-lg border object-cover"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="mb-2 block font-medium text-gray-700">
+                Short Description
+              </label>
+              <textarea
+                name="description"
+                value={book.description}
+                onChange={handleChange}
+                placeholder="Write a short description..."
+                rows={4}
+                required
+                className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-amber-600"
+              />
+            </div>
+
+            {/* User Information */}
+            <div className="border-t border-gray-200 pt-6">
+              <h2 className="mb-4 text-lg font-semibold text-gray-900">
+                Added By
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-2 block font-medium text-gray-700">
+                    User Name
+                  </label>
+                  <input
+                    type="text"
+                    value={book.userName}
+                    readOnly
+                    className="w-full rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-gray-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block font-medium text-gray-700">
+                    User Email
+                  </label>
+                  <input
+                    type="email"
+                    value={book.userEmail}
+                    readOnly
+                    className="w-full rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-gray-600"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={uploading}
+              className="w-full rounded-lg bg-amber-700 py-3 font-semibold text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Add Book
+            </button>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
