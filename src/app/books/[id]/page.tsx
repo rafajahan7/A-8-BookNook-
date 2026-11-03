@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -23,7 +23,7 @@ interface Book {
   rating: number;
 }
 
-export default function BookDetailsPage() {
+function BookDetailsContent() {
   const params = useParams();
   const id = params.id as string;
 
@@ -346,5 +346,19 @@ export default function BookDetailsPage() {
       )}
 
     </div>
+  );
+}
+
+export default function BookDetailsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-lg">Loading book details...</p>
+        </div>
+      }
+    >
+      <BookDetailsContent />
+    </Suspense>
   );
 }
