@@ -1,16 +1,55 @@
+
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import books from "@/data/books.json";
+
+interface Book {
+  _id: string;
+  title: string;
+  author: string;
+  category: string;
+  image: string;
+}
 
 export default function NewArrivals() {
-  // Get the latest 6 books
-  const newArrivals = [...books]
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() -
-        new Date(a.createdAt).getTime()
-    )
-    .slice(0, 6);
+  const [newArrivals, setNewArrivals] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchNewArrivals = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:8000/api/books/latest"
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch latest books");
+        }
+
+        const data = await response.json();
+
+        if (isActive) {
+          setNewArrivals(data.books);
+        }
+      } catch (error) {
+        console.error("Error fetching new arrivals:", error);
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchNewArrivals();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-16">
@@ -29,64 +68,62 @@ export default function NewArrivals() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      {loading ? (
+        <p className="text-center text-gray-500">
+          Loading new arrivals...
+        </p>
+      ) : newArrivals.length === 0 ? (
+        <p className="text-center text-gray-500">
+          No books available yet.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 
-        {newArrivals.map((book) => (
+          {newArrivals.map((book) => (
+            <div
+              key={book._id}
+              className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-lg transition duration-300"
+            >
 
-          <div
-            key={book.id}
-            className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-lg transition duration-300"
-          >
-
-            <div className="bg-[#F5F3EF] rounded-lg p-4 mb-5">
-              <Image
-                src={book.image}
-                alt={book.title}
-                width={300}
-                height={350}
-                className="w-full h-64 object-contain"
-                unoptimized
-              />
-            </div>
-
-            <div className="mb-4">
-
-              <span className="text-xs font-semibold text-[#D9A65A] uppercase tracking-wider">
-                {book.category}
-              </span>
-
-              <h3 className="text-xl font-bold text-[#173B57] mt-2">
-                {book.title}
-              </h3>
-
-              <p className="text-sm text-gray-500 mt-1">
-                By {book.author}
-              </p>
-
-              <div className="flex justify-between items-center mt-4">
-                <p className="text-sm text-gray-600">
-                  ⭐ {book.rating}
-                </p>
-
-                <p className="text-sm text-gray-500">
-                  {book.publishedYear}
-                </p>
+              <div className="bg-[#F5F3EF] rounded-lg p-4 mb-5">
+                <Image
+                  src={book.image}
+                  alt={book.title}
+                  width={300}
+                  height={350}
+                  className="w-full h-64 object-contain"
+                  unoptimized
+                />
               </div>
 
+              <div className="mb-4">
+
+                <span className="text-xs font-semibold text-[#D9A65A] uppercase tracking-wider">
+                  {book.category}
+                </span>
+
+                <h3 className="text-xl font-bold text-[#173B57] mt-2">
+                  {book.title}
+                </h3>
+
+                <p className="text-sm text-gray-500 mt-1">
+                  By {book.author}
+                </p>
+
+              </div>
+
+              <Link
+                href={`/books/${book._id}`}
+                className="block text-center w-full bg-[#173B57] text-white py-3 rounded-lg hover:bg-[#D9A65A] transition"
+              >
+                View Details
+              </Link>
+
             </div>
+          ))}
 
-            <Link
-              href={`/books/${book.id}`}
-              className="block text-center w-full bg-[#173B57] text-white py-3 rounded-lg hover:bg-[#D9A65A] transition"
-            >
-              View Details
-            </Link>
-
-          </div>
-
-        ))}
-
-      </div>
+        </div>
+      )}
 
       <div className="text-center mt-12">
         <Link

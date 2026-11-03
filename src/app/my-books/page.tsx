@@ -23,7 +23,6 @@ export default function MyBooksPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState("");
 
@@ -36,7 +35,7 @@ export default function MyBooksPage() {
   const fetchMyBooks = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8000/api/books/my-books/${encodeURIComponent(userEmail)}`
+        "http://localhost:8000/api/books"
       );
 
       const data = await response.json();
@@ -45,10 +44,18 @@ export default function MyBooksPage() {
         throw new Error(data.message || "Failed to load books.");
       }
 
-      setBooks(data.books);
+      // Filter books added by Demo User
+      const myBooks = data.books.filter(
+        (book: Book) => book.userEmail === userEmail
+      );
+
+      setBooks(myBooks);
+
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Something went wrong."
+        error instanceof Error
+          ? error.message
+          : "Something went wrong."
       );
     } finally {
       setLoading(false);
@@ -56,8 +63,12 @@ export default function MyBooksPage() {
   };
 
   useEffect(() => {
-    fetchMyBooks();
-  }, []);
+  const loadBooks = async () => {
+    await fetchMyBooks();
+  };
+
+  loadBooks();
+}, []);
 
   // Open edit form
   const handleEdit = (book: Book) => {
@@ -67,7 +78,9 @@ export default function MyBooksPage() {
 
   // Update form values
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     if (!editBook) return;
 
@@ -78,7 +91,9 @@ export default function MyBooksPage() {
   };
 
   // Save updated book
-  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdate = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
 
     if (!editBook) return;
@@ -87,7 +102,7 @@ export default function MyBooksPage() {
       const response = await fetch(
         `http://localhost:8000/api/books/${editBook._id}`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
           },
@@ -102,12 +117,17 @@ export default function MyBooksPage() {
       }
 
       toast.success("Book updated successfully!");
+
       setShowEditForm(false);
       setEditBook(null);
+
       fetchMyBooks();
+
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Something went wrong."
+        error instanceof Error
+          ? error.message
+          : "Something went wrong."
       );
     }
   };
@@ -134,14 +154,20 @@ export default function MyBooksPage() {
         throw new Error(data.message || "Failed to delete book.");
       }
 
-      setBooks(books.filter((book) => book._id !== deleteId));
+      setBooks(
+        books.filter((book) => book._id !== deleteId)
+      );
+
       toast.success("Book deleted successfully!");
 
       setShowDeleteModal(false);
       setDeleteId("");
+
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Something went wrong."
+        error instanceof Error
+          ? error.message
+          : "Something went wrong."
       );
     }
   };
@@ -169,7 +195,7 @@ export default function MyBooksPage() {
         {books.length === 0 ? (
           <div className="bg-white rounded-xl p-10 text-center shadow-sm">
             <p className="text-gray-600">
-              You haven't added any books yet.
+              You havent added any books yet.
             </p>
           </div>
         ) : (
@@ -180,6 +206,7 @@ export default function MyBooksPage() {
                 key={book._id}
                 className="bg-white rounded-xl shadow-sm overflow-hidden"
               >
+
                 <div className="relative h-64 bg-gray-100">
                   <Image
                     src={book.image}
@@ -191,6 +218,7 @@ export default function MyBooksPage() {
                 </div>
 
                 <div className="p-5">
+
                   <span className="text-sm text-blue-600">
                     {book.category}
                   </span>
@@ -204,6 +232,7 @@ export default function MyBooksPage() {
                   </p>
 
                   <div className="flex gap-3 mt-5">
+
                     <button
                       onClick={() => handleEdit(book)}
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
@@ -217,6 +246,7 @@ export default function MyBooksPage() {
                     >
                       Delete
                     </button>
+
                   </div>
                 </div>
               </div>
@@ -229,6 +259,7 @@ export default function MyBooksPage() {
       {/* Edit Modal */}
       {showEditForm && editBook && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+
           <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
 
             <h2 className="text-2xl font-bold mb-5">
@@ -241,6 +272,7 @@ export default function MyBooksPage() {
                 <label className="block mb-1 font-medium">
                   Book Title
                 </label>
+
                 <input
                   name="title"
                   value={editBook.title}
@@ -254,6 +286,7 @@ export default function MyBooksPage() {
                 <label className="block mb-1 font-medium">
                   Author Name
                 </label>
+
                 <input
                   name="author"
                   value={editBook.author}
@@ -267,6 +300,7 @@ export default function MyBooksPage() {
                 <label className="block mb-1 font-medium">
                   Category
                 </label>
+
                 <select
                   name="category"
                   value={editBook.category}
@@ -286,6 +320,7 @@ export default function MyBooksPage() {
                 <label className="block mb-1 font-medium">
                   Book Image URL
                 </label>
+
                 <input
                   name="image"
                   value={editBook.image}
@@ -299,6 +334,7 @@ export default function MyBooksPage() {
                 <label className="block mb-1 font-medium">
                   Description
                 </label>
+
                 <textarea
                   name="description"
                   value={editBook.description}
@@ -310,9 +346,13 @@ export default function MyBooksPage() {
               </div>
 
               <div className="flex gap-3 pt-2">
+
                 <button
                   type="button"
-                  onClick={() => setShowEditForm(false)}
+                  onClick={() => {
+                    setShowEditForm(false);
+                    setEditBook(null);
+                  }}
                   className="flex-1 border py-3 rounded-lg"
                 >
                   Cancel
@@ -324,6 +364,7 @@ export default function MyBooksPage() {
                 >
                   Save Changes
                 </button>
+
               </div>
 
             </form>
@@ -334,6 +375,7 @@ export default function MyBooksPage() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
 
             <h2 className="text-xl font-bold mb-3">
@@ -345,8 +387,12 @@ export default function MyBooksPage() {
             </p>
 
             <div className="flex gap-3">
+
               <button
-                onClick={() => setShowDeleteModal(false)}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteId("");
+                }}
                 className="flex-1 border py-3 rounded-lg"
               >
                 Cancel
@@ -358,11 +404,12 @@ export default function MyBooksPage() {
               >
                 Delete
               </button>
-            </div>
 
+            </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }

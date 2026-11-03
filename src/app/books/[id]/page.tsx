@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 
 interface Book {
   _id: string;
@@ -30,8 +31,45 @@ export default function BookDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [showBorrowModal, setShowBorrowModal] = useState(false);
+  const [borrowing, setBorrowing] = useState(false);
+
+  const userName = "Demo User";
+  const userEmail = "demo@booknook.com";
+
+  // Fetch book details
+  const fetchBook = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/books/${id}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to load book.");
+      }
+
+      setBook(data.book);
+      setError("");
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load book details
   useEffect(() => {
-    const fetchBook = async () => {
+    if (!id) return;
+
+    let isActive = true;
+
+    const loadBook = async () => {
       try {
         const response = await fetch(
           `http://localhost:8000/api/books/${id}`
@@ -43,22 +81,76 @@ export default function BookDetailsPage() {
           throw new Error(data.message || "Failed to load book.");
         }
 
-        setBook(data.book);
+        if (isActive) {
+          setBook(data.book);
+          setError("");
+        }
       } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Something went wrong."
-        );
+        if (isActive) {
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Something went wrong."
+          );
+        }
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
-    if (id) {
-      fetchBook();
-    }
+    loadBook();
+
+    return () => {
+      isActive = false;
+    };
   }, [id]);
+
+  // Confirm borrowing
+  const handleBorrow = async () => {
+    if (!book) return;
+
+    setBorrowing(true);
+
+    try {
+      const response = await fetch(
+        "http://localhost:8000/api/borrows",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            bookId: book._id,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to borrow book."
+        );
+      }
+
+      toast.success("Book borrowed successfully!");
+
+      setShowBorrowModal(false);
+
+      await fetchBook();
+
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong."
+      );
+    } finally {
+      setBorrowing(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -74,6 +166,7 @@ export default function BookDetailsPage() {
         <p className="text-red-500">
           {error || "Book not found."}
         </p>
+
         <Link
           href="/all-books"
           className="text-blue-600 hover:underline"
@@ -87,6 +180,7 @@ export default function BookDetailsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-5xl mx-auto">
+
         <Link
           href="/all-books"
           className="text-blue-600 hover:underline mb-8 inline-block"
@@ -96,7 +190,6 @@ export default function BookDetailsPage() {
 
         <div className="bg-white rounded-2xl shadow-md p-6 md:p-10 grid md:grid-cols-2 gap-10">
 
-          {/* Book Image */}
           <div className="flex justify-center items-center">
             <Image
               src={book.image}
@@ -108,8 +201,8 @@ export default function BookDetailsPage() {
             />
           </div>
 
-          {/* Book Information */}
           <div className="flex flex-col justify-center gap-5">
+
             <div>
               <span className="bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-sm">
                 {book.category}
@@ -157,17 +250,101 @@ export default function BookDetailsPage() {
             </div>
 
             <button
+              onClick={() => setShowBorrowModal(true)}
               disabled={book.availableCopies <= 0}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition"
             >
               {book.availableCopies > 0
-                ? "Borrow Book"
+                ? "Borrow This Book"
                 : "Currently Unavailable"}
             </button>
 
           </div>
         </div>
       </div>
+
+      {/* Borrow Confirmation Modal */}
+      {showBorrowModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
+
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Confirm Your Borrowing
+            </h2>
+
+            <p className="text-gray-500 mb-6">
+              Please check your information before borrowing this book.
+            </p>
+
+            <div className="space-y-4">
+
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  User Name
+                </label>
+
+                <input
+                  type="text"
+                  value={userName}
+                  readOnly
+                  className="w-full border rounded-lg px-4 py-3 bg-gray-100 text-gray-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  User Email
+                </label>
+
+                <input
+                  type="email"
+                  value={userEmail}
+                  readOnly
+                  className="w-full border rounded-lg px-4 py-3 bg-gray-100 text-gray-600"
+                />
+              </div>
+
+              <div className="bg-blue-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600">
+                  Book:
+                </p>
+
+                <p className="font-semibold text-gray-900">
+                  {book.title}
+                </p>
+
+                <p className="text-sm text-gray-600 mt-2">
+                  Return period: 14 days
+                </p>
+              </div>
+
+            </div>
+
+            <div className="flex gap-3 mt-6">
+
+              <button
+                onClick={() => setShowBorrowModal(false)}
+                disabled={borrowing}
+                className="w-1/2 border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleBorrow}
+                disabled={borrowing}
+                className="w-1/2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg"
+              >
+                {borrowing ? "Processing..." : "Confirm Borrow"}
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

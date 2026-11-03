@@ -9,8 +9,7 @@ export default function Footer() {
 
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
 
-        
-
+          {/* BookNook Information */}
           <div>
             <Link href="/" className="mb-4 flex items-center gap-2">
               <span className="text-3xl">📚</span>
@@ -24,23 +23,40 @@ export default function Footer() {
             </p>
           </div>
 
-        
-
+          {/* Quick Links */}
           <div>
             <h3 className="mb-5 text-lg font-semibold text-[#D9A65A]">
               Quick Links
             </h3>
 
             <ul className="space-y-3 text-sm text-gray-300">
-              <li><Link href="/">Home</Link></li>
-              <li><Link href="/books">All Books</Link></li>
-              <li><Link href="/login">Login</Link></li>
-              <li><Link href="/register">Register</Link></li>
+              <li>
+                <Link href="/" className="hover:text-[#D9A65A] transition">
+                  Home
+                </Link>
+              </li>
+
+              <li>
+                <Link href="/all-books" className="hover:text-[#D9A65A] transition">
+                  All Books
+                </Link>
+              </li>
+
+              <li>
+                <Link href="/login" className="hover:text-[#D9A65A] transition">
+                  Login
+                </Link>
+              </li>
+
+              <li>
+                <Link href="/register" className="hover:text-[#D9A65A] transition">
+                  Register
+                </Link>
+              </li>
             </ul>
           </div>
 
-        
-
+          {/* Contact Information */}
           <div>
             <h3 className="mb-5 text-lg font-semibold text-[#D9A65A]">
               Contact Us
@@ -53,8 +69,7 @@ export default function Footer() {
             </ul>
           </div>
 
-         
-
+          {/* Social Media */}
           <div>
             <h3 className="mb-5 text-lg font-semibold text-[#D9A65A]">
               Follow Us
@@ -71,7 +86,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
-                className="rounded-full bg-white/10 px-4 py-2 hover:bg-[#D9A65A]"
+                className="rounded-full bg-white/10 px-4 py-2 hover:bg-[#D9A65A] transition"
               >
                 f
               </a>
@@ -81,7 +96,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="rounded-full bg-white/10 px-4 py-2 hover:bg-[#D9A65A]"
+                className="rounded-full bg-white/10 px-4 py-2 hover:bg-[#D9A65A] transition"
               >
                 ◎
               </a>
@@ -91,7 +106,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="X"
-                className="rounded-full bg-white/10 px-4 py-2 hover:bg-[#D9A65A]"
+                className="rounded-full bg-white/10 px-4 py-2 hover:bg-[#D9A65A] transition"
               >
                 𝕏
               </a>
@@ -101,8 +116,7 @@ export default function Footer() {
 
         </div>
 
-       
-
+        {/* Copyright */}
         <div className="mt-12 border-t border-white/20 pt-6 text-center">
           <p className="text-sm text-gray-300">
             © 2026 BookNook. All rights reserved.

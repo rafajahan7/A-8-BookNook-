@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import {
   BookOpen,
   Menu,
@@ -13,235 +13,219 @@ import {
   LogOut
 } from "lucide-react";
 
-export default function Navbar() {
-
+function NavbarContent() {
   const pathname = usePathname();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
- const navLinks = [
-  { name: "Home", href: "/", private: false },
-  { name: "All Books", href: "/books", private: false },
-  { name: "Add Book", href: "/add-book", private: true },
-  { name: "My Books", href: "/my-books", private: true },
-  { name: "My Borrows", href: "/my-borrows", private: true },
-];
+  const navLinks = [
+    { name: "Home", href: "/", private: false },
+    { name: "All Books", href: "/all-books", private: false },
+    { name: "Add Book", href: "/add-book", private: true },
+    { name: "My Books", href: "/my-books", private: true },
+    { name: "My Borrows", href: "/my-borrows", private: true }
+  ];
 
-  const visibleLinks = navLinks.filter((link) => {
-    return !link.private || isLoggedIn;
-  });
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setProfileOpen(false);
+    setMenuOpen(false);
+  };
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
+    <nav className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4">
 
-      <div className="navbar mx-auto max-w-7xl px-4 md:px-8">
+        <div className="flex justify-between items-center h-20">
 
-     
-
-        <div className="flex-1">
-          <Link href="/" className="flex items-center gap-2">
-
-            <div className="rounded-lg bg-[#173B57] p-2">
-              <BookOpen size={25} color="white" />
-            </div>
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center gap-2"
+            onClick={() => setMenuOpen(false)}
+          >
+            <BookOpen size={32} className="text-[#D9A65A]" />
 
             <span className="text-2xl font-bold text-[#173B57]">
               BookNook
             </span>
-
           </Link>
-        </div>
 
-        
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-8">
 
-        <div className="flex-none md:hidden">
+            {navLinks
+              .filter((link) => !link.private || isLoggedIn)
+              .map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`font-medium transition ${
+                    pathname === link.href
+                      ? "text-[#D9A65A]"
+                      : "text-[#173B57] hover:text-[#D9A65A]"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              ))}
 
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="btn btn-ghost btn-circle"
-            aria-label="Toggle navigation menu"
-          >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          </div>
 
-        </div>
+          {/* Login / Profile */}
+          <div className="hidden md:flex items-center gap-4">
 
-        
-
-        <div className="hidden md:flex items-center gap-6">
-
-          {visibleLinks.map((link) => (
-
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`text-sm font-medium transition ${
-                pathname === link.href
-                  ? "text-[#D9A65A]"
-                  : "text-gray-700 hover:text-[#D9A65A]"
-              }`}
-            >
-              {link.name}
-            </Link>
-
-          ))}
-
-        
-
-          {!isLoggedIn && (
-            <div className="flex items-center gap-3">
-
-              <Link
-                href="/login"
-                className="btn btn-outline border-[#173B57] text-[#173B57]"
-              >
-                Login
-              </Link>
-
-              <Link
-                href="/register"
-                className="btn bg-[#173B57] text-white hover:bg-[#D9A65A] hover:text-white border-none"
-              >
-                Register
-              </Link>
-
-            </div>
-          )}
-
-         
-
-          {isLoggedIn && (
-
-            <div className="relative">
-
-              <button
-                onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-2"
-              >
-
-                <div className="avatar placeholder">
-                  <div className="w-10 rounded-full bg-[#173B57] text-white">
-                    <span>U</span>
-                  </div>
-                </div>
-
-                <ChevronDown size={17} />
-
-              </button>
-
-              {profileOpen && (
-
-                <div className="absolute right-0 top-14 w-48 rounded-lg bg-white shadow-lg border p-3">
-
-                  <p className="font-semibold text-gray-800">
-                    User Name
-                  </p>
-
-                  <Link
-                    href="/profile"
-                    className="flex items-center gap-2 py-3 text-sm hover:text-[#D9A65A]"
-                    onClick={() => setProfileOpen(false)}
-                  >
-                    <UserRound size={17} />
-                    My Profile
-                  </Link>
-
-                  <button
-                    onClick={() => {
-                      setIsLoggedIn(false);
-                      setProfileOpen(false);
-                    }}
-                    className="flex items-center gap-2 text-sm text-red-600"
-                  >
-                    <LogOut size={17} />
-                    Logout
-                  </button>
-
-                </div>
-
-              )}
-
-            </div>
-
-          )}
-
-        </div>
-
-      </div>
-
-    
-
-      {menuOpen && (
-
-        <div className="md:hidden border-t bg-white px-5 py-4">
-
-          <div className="flex flex-col gap-4">
-
-            {visibleLinks.map((link) => (
-
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                className="text-gray-700 hover:text-[#D9A65A]"
-              >
-                {link.name}
-              </Link>
-
-            ))}
-
-            {!isLoggedIn && (
-
-              <div className="flex gap-3 pt-2">
-
+            {!isLoggedIn ? (
+              <>
                 <Link
                   href="/login"
-                  className="btn btn-outline flex-1"
-                  onClick={() => setMenuOpen(false)}
+                  className="font-semibold text-[#173B57] hover:text-[#D9A65A] transition"
                 >
                   Login
                 </Link>
 
                 <Link
                   href="/register"
-                  className="btn bg-[#173B57] text-white flex-1"
-                  onClick={() => setMenuOpen(false)}
+                  className="bg-[#173B57] text-white px-5 py-2.5 rounded-lg hover:bg-[#D9A65A] transition"
                 >
                   Register
                 </Link>
-
-              </div>
-
-            )}
-
-            {isLoggedIn && (
-
-              <>
-                <Link href="/profile" onClick={() => setMenuOpen(false)}>
-                  My Profile
-                </Link>
+              </>
+            ) : (
+              <div className="relative">
 
                 <button
-                  onClick={() => {
-                    setIsLoggedIn(false);
-                    setMenuOpen(false);
-                  }}
-                  className="text-left text-red-600"
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="flex items-center gap-2 text-[#173B57] font-medium"
                 >
-                  Logout
-                </button>
-              </>
+                  <div className="w-10 h-10 rounded-full bg-[#F5F3EF] flex items-center justify-center">
+                    <UserRound size={22} />
+                  </div>
 
+                  <span>Demo User</span>
+
+                  <ChevronDown size={18} />
+                </button>
+
+                {profileOpen && (
+                  <div className="absolute right-0 mt-3 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2">
+
+                    <Link
+                      href="/profile"
+                      onClick={() => setProfileOpen(false)}
+                      className="block px-4 py-3 text-sm text-gray-700 hover:bg-[#F5F3EF]"
+                    >
+                      My Profile
+                    </Link>
+
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-[#F5F3EF]"
+                    >
+                      <LogOut size={16} />
+                      Logout
+                    </button>
+
+                  </div>
+                )}
+
+              </div>
             )}
 
           </div>
 
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden text-[#173B57]"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+
         </div>
 
-      )}
+        {/* Mobile Navigation */}
+        {menuOpen && (
+          <div className="md:hidden border-t border-gray-100 py-5">
 
-    </header>
+            <div className="flex flex-col gap-4">
+
+              {navLinks
+                .filter((link) => !link.private || isLoggedIn)
+                .map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setMenuOpen(false)}
+                    className={`font-medium ${
+                      pathname === link.href
+                        ? "text-[#D9A65A]"
+                        : "text-[#173B57]"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+
+              {!isLoggedIn ? (
+                <div className="flex flex-col gap-3 pt-3 border-t border-gray-100">
+
+                  <Link
+                    href="/login"
+                    onClick={() => setMenuOpen(false)}
+                    className="font-semibold text-[#173B57]"
+                  >
+                    Login
+                  </Link>
+
+                  <Link
+                    href="/register"
+                    onClick={() => setMenuOpen(false)}
+                    className="bg-[#173B57] text-white text-center py-2.5 rounded-lg"
+                  >
+                    Register
+                  </Link>
+
+                </div>
+              ) : (
+                <div className="pt-3 border-t border-gray-100">
+
+                  <Link
+                    href="/profile"
+                    onClick={() => setMenuOpen(false)}
+                    className="block py-2 text-[#173B57]"
+                  >
+                    My Profile
+                  </Link>
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 py-2 text-red-500"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+
+                </div>
+              )}
+
+            </div>
+
+          </div>
+        )}
+
+      </div>
+    </nav>
+  );
+}
+
+export default function Navbar() {
+  return (
+    <Suspense fallback={null}>
+      <NavbarContent />
+    </Suspense>
   );
 }
