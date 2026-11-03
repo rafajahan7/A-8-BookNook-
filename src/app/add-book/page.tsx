@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function AddBook() {
   const [book, setBook] = useState({
@@ -74,18 +75,54 @@ export default function AddBook() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+ 
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-    if (!book.image) {
-      alert("Please upload a book image first.");
-      return;
+  if (!book.image) {
+    toast.error("Please upload a book image first.");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      "http://localhost:8000/api/books/add-book",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(book),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to add book.");
     }
 
-    console.log("Book Information:", book);
+    toast.success("Book added successfully!");
 
-    alert("Book information is ready! MongoDB connection will be added next.");
-  };
+    setBook({
+      title: "",
+      author: "",
+      category: "",
+      image: "",
+      description: "",
+      userName: "Demo User",
+      userEmail: "demo@booknook.com",
+    });
+
+  } catch (error) {
+    toast.error(
+      error instanceof Error
+        ? error.message
+        : "Something went wrong."
+    );
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-[#f8f7f3] px-4 py-12">
