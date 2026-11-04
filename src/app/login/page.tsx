@@ -14,6 +14,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,11 +23,9 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Get the page the user wanted to visit before login
       const params = new URLSearchParams(window.location.search);
       const requestedPage = params.get("callbackURL") || "/";
 
-      // Only allow internal page paths
       const callbackURL =
         requestedPage.startsWith("/") && !requestedPage.startsWith("//")
           ? requestedPage
@@ -54,12 +54,27 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+
+    } catch {
+      toast.error("Google login failed. Please try again.");
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F5F7FA] flex items-center justify-center px-4 py-12">
 
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
 
-        {/* Logo */}
+
         <Link
           href="/"
           className="flex items-center justify-center gap-2 mb-6"
@@ -73,7 +88,7 @@ export default function LoginPage() {
           </span>
         </Link>
 
-        {/* Heading */}
+
         <div className="text-center mb-7">
           <h1 className="text-3xl font-bold text-gray-900">
             Welcome Back!
@@ -84,10 +99,9 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Login Form */}
+  
         <form onSubmit={handleLogin} className="space-y-5">
 
-          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email Address
@@ -110,7 +124,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Password */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Password
@@ -133,17 +146,15 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Forgot Password */}
           <div className="text-right">
             <span className="text-sm text-gray-400 cursor-not-allowed">
               Forgot Password?
             </span>
           </div>
 
-          {/* Login Button */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || googleLoading}
             className="w-full bg-[#173B57] text-white py-3 rounded-lg font-semibold hover:bg-[#245575] transition disabled:opacity-60"
           >
             {loading ? "Logging in..." : "Login"}
@@ -151,27 +162,32 @@ export default function LoginPage() {
 
         </form>
 
-        {/* Divider */}
         <div className="flex items-center gap-3 my-6">
           <div className="flex-1 border-t border-gray-200"></div>
           <span className="text-sm text-gray-400">OR</span>
           <div className="flex-1 border-t border-gray-200"></div>
         </div>
 
-        {/* Google Login - configure later */}
+    
         <button
           type="button"
-          disabled
-          className="w-full border border-gray-300 py-3 rounded-lg flex items-center justify-center gap-2 text-gray-500 cursor-not-allowed"
+          onClick={handleGoogleLogin}
+          disabled={loading || googleLoading}
+          className="w-full border border-gray-300 py-3 rounded-lg flex items-center justify-center gap-2 text-gray-700 hover:bg-gray-50 transition disabled:opacity-60"
         >
-          Continue with Google
+          {googleLoading ? "Connecting to Google..." : (
+            <>
+              <img
+                src="https://www.google.com/favicon.ico"
+                alt="Google"
+                className="w-5 h-5"
+              />
+              Continue with Google
+            </>
+          )}
         </button>
 
-        <p className="text-xs text-center text-gray-400 mt-2">
-          Google sign-in will be enabled after configuration.
-        </p>
-
-        {/* Register Link */}
+  
         <p className="text-center text-sm text-gray-600 mt-7">
           Dont have an account?{" "}
           <Link
@@ -182,7 +198,7 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        {/* Home Link */}
+     
         <div className="text-center mt-4">
           <Link
             href="/"

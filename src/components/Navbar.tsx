@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, Suspense } from "react";
 import {
   BookOpen,
@@ -13,12 +13,20 @@ import {
   LogOut
 } from "lucide-react";
 
+import { authClient } from "@/lib/auth-client";
+import { toast } from "sonner";
+
 function NavbarContent() {
   const pathname = usePathname();
+  const router = useRouter();
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Get the actual logged-in user's session
+  const { data: session, isPending } = authClient.useSession();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+
+  const isLoggedIn = !!session?.user;
 
   const navLinks = [
     { name: "Home", href: "/", private: false },
@@ -28,10 +36,27 @@ function NavbarContent() {
     { name: "My Borrows", href: "/my-borrows", private: true }
   ];
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setProfileOpen(false);
-    setMenuOpen(false);
+  // Logout function
+  const handleLogout = async () => {
+    try {
+      const { error } = await authClient.signOut();
+
+      if (error) {
+        toast.error("Logout failed. Please try again.");
+        return;
+      }
+
+      setProfileOpen(false);
+      setMenuOpen(false);
+
+      toast.success("Logged out successfully!");
+
+      router.push("/");
+      router.refresh();
+
+    } catch {
+      toast.error("Something went wrong!");
+    }
   };
 
   return (
@@ -77,7 +102,7 @@ function NavbarContent() {
           {/* Login / Profile */}
           <div className="hidden md:flex items-center gap-4">
 
-            {!isLoggedIn ? (
+            {!isPending && !isLoggedIn && (
               <>
                 <Link
                   href="/login"
@@ -93,18 +118,28 @@ function NavbarContent() {
                   Register
                 </Link>
               </>
-            ) : (
+            )}
+
+            {isLoggedIn && (
               <div className="relative">
 
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
                   className="flex items-center gap-2 text-[#173B57] font-medium"
                 >
-                  <div className="w-10 h-10 rounded-full bg-[#F5F3EF] flex items-center justify-center">
-                    <UserRound size={22} />
-                  </div>
+                  {session.user.image ? (
+                    <img
+                      src={session.user.image}
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-[#F5F3EF] flex items-center justify-center">
+                      <UserRound size={22} />
+                    </div>
+                  )}
 
-                  <span>Demo User</span>
+                  <span>{session.user.name || "User"}</span>
 
                   <ChevronDown size={18} />
                 </button>
@@ -170,7 +205,7 @@ function NavbarContent() {
                   </Link>
                 ))}
 
-              {!isLoggedIn ? (
+              {!isPending && !isLoggedIn && (
                 <div className="flex flex-col gap-3 pt-3 border-t border-gray-100">
 
                   <Link
@@ -190,8 +225,26 @@ function NavbarContent() {
                   </Link>
 
                 </div>
-              ) : (
+              )}
+
+              {isLoggedIn && (
                 <div className="pt-3 border-t border-gray-100">
+
+                  <div className="flex items-center gap-3 mb-3">
+                    {session.user.image ? (
+                      <img
+                        src={session.user.image}
+                        alt="Profile"
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <UserRound size={24} className="text-[#173B57]" />
+                    )}
+
+                    <span className="font-medium text-[#173B57]">
+                      {session.user.name || "User"}
+                    </span>
+                  </div>
 
                   <Link
                     href="/profile"
