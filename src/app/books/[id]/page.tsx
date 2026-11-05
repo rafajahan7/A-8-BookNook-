@@ -112,12 +112,33 @@ function BookDetailsContent() {
     };
   }, [id]);
 
+  // Open borrow modal
+  const handleOpenBorrowModal = () => {
+    if (!userEmail) {
+      toast.error("Please log in before borrowing a book.");
+      return;
+    }
+
+    if (!book || book.availableCopies <= 0) {
+      toast.error("This book is currently unavailable.");
+      return;
+    }
+
+    setShowBorrowModal(true);
+  };
+
   // Borrow book
   const handleBorrow = async () => {
     if (!book) return;
 
     if (!userEmail) {
       toast.error("Please log in before borrowing a book.");
+      return;
+    }
+
+    if (book.availableCopies <= 0) {
+      toast.error("This book is currently unavailable.");
+      setShowBorrowModal(false);
       return;
     }
 
@@ -189,6 +210,8 @@ function BookDetailsContent() {
     );
   }
 
+  const isAvailable = book.availableCopies > 0;
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-5xl mx-auto">
@@ -230,12 +253,16 @@ function BookDetailsContent() {
             </div>
 
             <div className="border-t border-b py-5 space-y-3">
+
               <p className="text-gray-700">
                 <strong>Published Year:</strong> {book.publishedYear}
               </p>
 
               <p className="text-gray-700">
-                <strong>Available Copies:</strong> {book.availableCopies}
+                <strong>Available Copies:</strong>{" "}
+                <span className={isAvailable ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
+                  {book.availableCopies}
+                </span>
               </p>
 
               <p className="text-gray-700">
@@ -249,6 +276,7 @@ function BookDetailsContent() {
               <p className="text-gray-700">
                 <strong>Email:</strong> {book.userEmail}
               </p>
+
             </div>
 
             <div>
@@ -261,20 +289,20 @@ function BookDetailsContent() {
               </p>
             </div>
 
+            {/* Borrow Button */}
             <button
-              onClick={() => setShowBorrowModal(true)}
-              disabled={book.availableCopies <= 0}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition"
+              onClick={handleOpenBorrowModal}
+              disabled={!isAvailable}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition"
             >
-              {book.availableCopies > 0
-                ? "Borrow This Book"
-                : "Currently Unavailable"}
+              {isAvailable ? "Borrow This Book" : "Not Available"}
             </button>
 
           </div>
         </div>
       </div>
 
+      {/* Borrow Confirmation Modal */}
       {showBorrowModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
 
@@ -337,14 +365,14 @@ function BookDetailsContent() {
               <button
                 onClick={() => setShowBorrowModal(false)}
                 disabled={borrowing}
-                className="w-1/2 border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-100"
+                className="w-1/2 border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-100 disabled:opacity-50"
               >
                 Cancel
               </button>
 
               <button
                 onClick={handleBorrow}
-                disabled={borrowing || !userEmail}
+                disabled={borrowing || !userEmail || book.availableCopies <= 0}
                 className="w-1/2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg"
               >
                 {borrowing ? "Processing..." : "Confirm Borrow"}

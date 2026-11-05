@@ -19,6 +19,7 @@ export default function AddBook() {
     category: "",
     image: "",
     description: "",
+    totalCopies: "",
   });
 
   const [uploading, setUploading] = useState(false);
@@ -101,6 +102,13 @@ export default function AddBook() {
       return;
     }
 
+    const totalCopies = Number(book.totalCopies);
+
+    if (!Number.isInteger(totalCopies) || totalCopies < 1) {
+      toast.error("Total copies must be at least 1.");
+      return;
+    }
+
     try {
       setAdding(true);
 
@@ -116,6 +124,7 @@ export default function AddBook() {
           },
           body: JSON.stringify({
             ...book,
+            totalCopies: totalCopies,
             userName: userName,
             userEmail: userEmail,
           }),
@@ -136,6 +145,7 @@ export default function AddBook() {
         category: "",
         image: "",
         description: "",
+        totalCopies: "",
       });
 
       setUploadError("");
@@ -229,6 +239,29 @@ export default function AddBook() {
               </select>
             </div>
 
+            {/* Total Copies */}
+            <div>
+              <label className="mb-2 block font-medium text-gray-700">
+                Total Copies
+              </label>
+
+              <input
+                type="number"
+                name="totalCopies"
+                value={book.totalCopies}
+                onChange={handleChange}
+                placeholder="Enter total number of copies"
+                min="1"
+                step="1"
+                required
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-amber-600"
+              />
+
+              <p className="mt-1 text-sm text-gray-500">
+                Enter how many copies of this book are available in total.
+              </p>
+            </div>
+
             {/* Image Upload */}
             <div>
               <label className="mb-2 block font-medium text-gray-700">
@@ -248,6 +281,7 @@ export default function AddBook() {
                   <div className="flex items-center justify-center">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-200 border-t-amber-700"></div>
                   </div>
+
                   <p className="mt-2 text-center text-sm text-amber-700">
                     Uploading image, please wait...
                   </p>
@@ -339,6 +373,7 @@ export default function AddBook() {
                 <div className="flex items-center justify-center">
                   <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-200 border-t-amber-700"></div>
                 </div>
+
                 <p className="mt-2 text-center text-sm text-amber-700">
                   Adding your book, please wait...
                 </p>
