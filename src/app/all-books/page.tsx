@@ -1,9 +1,10 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 interface Book {
   _id: string;
@@ -23,20 +24,23 @@ interface Book {
   featured: boolean;
 }
 
-export default function AllBooksPage() {
+function AllBooksContent() {
   const [books, setBooks] = useState<Book[]>([]);
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const searchParams = useSearchParams();
+
+  const categoryFromURL = searchParams.get("category");
+  const selectedCategory = categoryFromURL || "All";
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8000/api/books"
-        );
+  `${process.env.NEXT_PUBLIC_URL}/api/books`
+);
 
         const data = await response.json();
 
@@ -117,7 +121,13 @@ export default function AllBooksPage() {
             {categories.map((category) => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => {
+                  if (category === "All") {
+                    window.location.href = "/all-books";
+                  } else {
+                    window.location.href = `/all-books?category=${encodeURIComponent(category)}`;
+                  }
+                }}
                 className={`px-5 py-2 rounded-full border transition ${
                   selectedCategory === category
                     ? "bg-[#173B57] text-white border-[#173B57]"
@@ -131,6 +141,7 @@ export default function AllBooksPage() {
 
           <p className="text-gray-500 mb-6">
             Showing {filteredBooks.length} books
+            {selectedCategory !== "All" && ` in ${selectedCategory}`}
           </p>
 
           {filteredBooks.length > 0 ? (
@@ -201,5 +212,19 @@ export default function AllBooksPage() {
       )}
 
     </main>
+  );
+}
+
+export default function AllBooksPage() {
+  return (
+    <Suspense
+      fallback={
+        <p className="text-center py-16 text-gray-500">
+          Loading books...
+        </p>
+      }
+    >
+      <AllBooksContent />
+    </Suspense>
   );
 }

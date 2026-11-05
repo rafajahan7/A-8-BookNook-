@@ -6,6 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
+import { getToken } from "@/lib/getToken";
+import { authClient } from "@/lib/auth-client";
 
 interface Book {
   _id: string;
@@ -27,6 +29,11 @@ function BookDetailsContent() {
   const params = useParams();
   const id = params.id as string;
 
+  const { data: session, isPending } = authClient.useSession();
+
+  const userName = session?.user?.name || "";
+  const userEmail = session?.user?.email || "";
+
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -34,15 +41,12 @@ function BookDetailsContent() {
   const [showBorrowModal, setShowBorrowModal] = useState(false);
   const [borrowing, setBorrowing] = useState(false);
 
-  const userName = "Demo User";
-  const userEmail = "demo@booknook.com";
-
   // Fetch book details
   const fetchBook = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8000/api/books/${id}`
-      );
+  `${process.env.NEXT_PUBLIC_URL}/api/books/${id}`
+);
 
       const data = await response.json();
 
@@ -72,8 +76,8 @@ function BookDetailsContent() {
     const loadBook = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/api/books/${id}`
-        );
+  `${process.env.NEXT_PUBLIC_URL}/api/books/${id}`
+);
 
         const data = await response.json();
 
@@ -107,19 +111,27 @@ function BookDetailsContent() {
     };
   }, [id]);
 
-  // Confirm borrowing
+
   const handleBorrow = async () => {
     if (!book) return;
+
+    if (!userEmail) {
+      toast.error("Please log in before borrowing a book.");
+      return;
+    }
 
     setBorrowing(true);
 
     try {
+      const token = await getToken();
+
       const response = await fetch(
-        "http://localhost:8000/api/borrows",
+        `${process.env.NEXT_PUBLIC_URL}/api/borrows`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             bookId: book._id,
@@ -152,7 +164,7 @@ function BookDetailsContent() {
     }
   };
 
-  if (loading) {
+  if (loading || isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-lg">Loading book details...</p>
@@ -263,7 +275,7 @@ function BookDetailsContent() {
         </div>
       </div>
 
-      {/* Borrow Confirmation Modal */}
+
       {showBorrowModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
 
@@ -333,7 +345,7 @@ function BookDetailsContent() {
 
               <button
                 onClick={handleBorrow}
-                disabled={borrowing}
+                disabled={borrowing || !userEmail}
                 className="w-1/2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg"
               >
                 {borrowing ? "Processing..." : "Confirm Borrow"}

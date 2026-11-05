@@ -3,20 +3,27 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
+import { getToken } from "@/lib/getToken";
 
 export default function AddBook() {
+
+  const { data: session, isPending } = authClient.useSession();
+
+  const userName = session?.user?.name || "";
+  const userEmail = session?.user?.email || "";
+
   const [book, setBook] = useState({
     title: "",
     author: "",
     category: "",
     image: "",
     description: "",
-    userName: "Demo User",
-    userEmail: "demo@booknook.com",
   });
 
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [adding, setAdding] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -27,7 +34,7 @@ export default function AddBook() {
     });
   };
 
-  // Upload image to imgbb through Express
+  // Upload image to ImgBB through Express
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -48,12 +55,12 @@ export default function AddBook() {
       setUploadError("");
 
       const response = await fetch(
-        "http://localhost:8000/api/upload/image",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+  `${process.env.NEXT_PUBLIC_URL}/api/upload/image`,
+  {
+    method: "POST",
+    body: formData,
+  }
+);
 
       const data = await response.json();
 
@@ -68,60 +75,79 @@ export default function AddBook() {
 
     } catch (error) {
       setUploadError(
-        error instanceof Error ? error.message : "Image upload failed."
+        error instanceof Error
+          ? error.message
+          : "Image upload failed."
       );
     } finally {
       setUploading(false);
     }
   };
 
- 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
 
-  if (!book.image) {
-    toast.error("Please upload a book image first.");
-    return;
-  }
+  // Add a new book
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  try {
-    const response = await fetch(
-      "http://localhost:8000/api/books",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(book),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to add book.");
+    if (!session?.user || !userEmail) {
+      toast.error("Please log in before adding a book.");
+      return;
     }
 
-    toast.success("Book added successfully!");
+    if (!book.image) {
+      toast.error("Please upload a book image first.");
+      return;
+    }
 
-    setBook({
-      title: "",
-      author: "",
-      category: "",
-      image: "",
-      description: "",
-      userName: "Demo User",
-      userEmail: "demo@booknook.com",
-    });
+    try {
+      setAdding(true);
 
-  } catch (error) {
-    toast.error(
-      error instanceof Error
-        ? error.message
-        : "Something went wrong."
-    );
+      const token = await getToken();
+
+      const response = await fetch(
+  `${process.env.NEXT_PUBLIC_URL}/api/books`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      ...book,
+      userName: userName,
+      userEmail: userEmail,
+    }),
   }
-};
+);
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to add book.");
+      }
+
+      toast.success("Book added successfully!");
+
+      setBook({
+        title: "",
+        author: "",
+        category: "",
+        image: "",
+        description: "",
+      });
+
+      setUploadError("");
+
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong."
+      );
+    } finally {
+      setAdding(false);
+    }
+  };
 
 
   return (
@@ -149,6 +175,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               <label className="mb-2 block font-medium text-gray-700">
                 Book Title
               </label>
+
               <input
                 type="text"
                 name="title"
@@ -164,6 +191,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               <label className="mb-2 block font-medium text-gray-700">
                 Author Name
               </label>
+
               <input
                 type="text"
                 name="author"
@@ -179,6 +207,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               <label className="mb-2 block font-medium text-gray-700">
                 Category
               </label>
+
               <select
                 name="category"
                 value={book.category}
@@ -240,6 +269,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               <label className="mb-2 block font-medium text-gray-700">
                 Short Description
               </label>
+
               <textarea
                 name="description"
                 value={book.description}
@@ -258,13 +288,15 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               </h2>
 
               <div className="space-y-4">
+
                 <div>
                   <label className="mb-2 block font-medium text-gray-700">
                     User Name
                   </label>
+
                   <input
                     type="text"
-                    value={book.userName}
+                    value={userName}
                     readOnly
                     className="w-full rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-gray-600"
                   />
@@ -274,22 +306,24 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                   <label className="mb-2 block font-medium text-gray-700">
                     User Email
                   </label>
+
                   <input
                     type="email"
-                    value={book.userEmail}
+                    value={userEmail}
                     readOnly
                     className="w-full rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-gray-600"
                   />
                 </div>
+
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={uploading}
+              disabled={uploading || adding || isPending || !userEmail}
               className="w-full rounded-lg bg-amber-700 py-3 font-semibold text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Add Book
+              {adding ? "Adding Book..." : "Add Book"}
             </button>
 
           </form>

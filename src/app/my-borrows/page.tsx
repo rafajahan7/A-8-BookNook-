@@ -1,10 +1,12 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
+import { getToken } from "@/lib/getToken";
 
 interface Borrow {
   _id: string;
@@ -23,11 +25,26 @@ export default function MyBorrowsPage() {
   const [loading, setLoading] = useState(true);
   const [returningId, setReturningId] = useState("");
 
+  const { data: session, isPending } = authClient.useSession();
+  const userEmail = session?.user?.email || "";
+
   // Fetch borrowed books
-  const fetchBorrows = async () => {
+  const fetchBorrows = useCallback(async () => {
     try {
+      if (!userEmail) {
+        setBorrows([]);
+        return;
+      }
+
+      const token = await getToken();
+
       const response = await fetch(
-        "http://localhost:8000/api/borrows"
+        `${process.env.NEXT_PUBLIC_URL}/api/borrows`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       const data = await response.json();
@@ -48,60 +65,33 @@ export default function MyBorrowsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userEmail]);
 
   // Load borrowed books
   useEffect(() => {
-    let isActive = true;
+    if (isPending) return;
 
-    const loadBorrows = async () => {
-      try {
-        const response = await fetch(
-          "http://localhost:8000/api/borrows"
-        );
+    const timer = setTimeout(() => {
+      fetchBorrows();
+    }, 0);
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.message || "Failed to load borrowed books."
-          );
-        }
-
-        if (isActive) {
-          setBorrows(data.borrows || []);
-        }
-      } catch (error) {
-        if (isActive) {
-          toast.error(
-            error instanceof Error
-              ? error.message
-              : "Something went wrong."
-          );
-        }
-      } finally {
-        if (isActive) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadBorrows();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
+    return () => clearTimeout(timer);
+  }, [isPending, fetchBorrows]);
 
   // Return borrowed book
   const handleReturn = async (borrowId: string) => {
     setReturningId(borrowId);
 
     try {
+      const token = await getToken();
+
       const response = await fetch(
-        `http://localhost:8000/api/borrows/${borrowId}`,
+        `${process.env.NEXT_PUBLIC_URL}/api/borrows/${borrowId}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -114,9 +104,7 @@ export default function MyBorrowsPage() {
       }
 
       toast.success("Book returned successfully!");
-
       await fetchBorrows();
-
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -128,8 +116,7 @@ export default function MyBorrowsPage() {
     }
   };
 
-  // Loading
-  if (loading) {
+  if (loading || isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-lg">
@@ -141,10 +128,8 @@ export default function MyBorrowsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
-
       <div className="max-w-6xl mx-auto">
 
-        {/* Page Heading */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
             My Borrows
@@ -155,12 +140,9 @@ export default function MyBorrowsPage() {
           </p>
         </div>
 
-        {/* Borrowed Books Table */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
-
           {borrows.length === 0 ? (
             <div className="text-center py-16 px-4">
-
               <h2 className="text-xl font-semibold text-gray-800">
                 No Borrowed Books Yet
               </h2>
@@ -175,13 +157,10 @@ export default function MyBorrowsPage() {
               >
                 Explore Books
               </Link>
-
             </div>
           ) : (
             <div className="overflow-x-auto">
-
               <table className="w-full text-left">
-
                 <thead className="bg-blue-50 text-gray-700">
                   <tr>
                     <th className="px-6 py-4">Image</th>
@@ -199,8 +178,6 @@ export default function MyBorrowsPage() {
                       key={borrow._id}
                       className="border-t hover:bg-gray-50"
                     >
-
-                      {/* Book Image */}
                       <td className="px-6 py-4">
                         <Image
                           src={borrow.bookImage}
@@ -212,26 +189,22 @@ export default function MyBorrowsPage() {
                         />
                       </td>
 
-                      {/* Book Title */}
                       <td className="px-6 py-4 font-medium text-gray-800">
                         {borrow.bookTitle}
                       </td>
 
-                      {/* Borrow Date */}
                       <td className="px-6 py-4 text-gray-600">
                         {new Date(
                           borrow.borrowDate
                         ).toLocaleDateString()}
                       </td>
 
-                      {/* Return Date */}
                       <td className="px-6 py-4 text-gray-600">
                         {new Date(
                           borrow.returnDate
                         ).toLocaleDateString()}
                       </td>
 
-                      {/* Status */}
                       <td className="px-6 py-4">
                         {borrow.returned ? (
                           <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
@@ -244,12 +217,9 @@ export default function MyBorrowsPage() {
                         )}
                       </td>
 
-                      {/* Return Button */}
                       <td className="px-6 py-4">
                         <button
-                          onClick={() =>
-                            handleReturn(borrow._id)
-                          }
+                          onClick={() => handleReturn(borrow._id)}
                           disabled={
                             borrow.returned ||
                             returningId === borrow._id
@@ -263,11 +233,9 @@ export default function MyBorrowsPage() {
                             : "Return Book"}
                         </button>
                       </td>
-
                     </tr>
                   ))}
                 </tbody>
-
               </table>
             </div>
           )}

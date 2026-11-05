@@ -1,9 +1,11 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
+import { getToken } from "@/lib/getToken";
 
 interface Book {
   _id: string;
@@ -29,13 +31,22 @@ export default function MyBooksPage() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [editBook, setEditBook] = useState<Book | null>(null);
 
-  const userEmail = "demo@booknook.com";
+  const { data: session, isPending } = authClient.useSession();
+
+  const userEmail = session?.user?.email || "";
 
   // Get user's books
-  const fetchMyBooks = async () => {
+  const fetchMyBooks = useCallback(async () => {
     try {
+      const token = await getToken();
+
       const response = await fetch(
-        "http://localhost:8000/api/books"
+        `${process.env.NEXT_PUBLIC_URL}/api/books/my-books`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       const data = await response.json();
@@ -44,12 +55,7 @@ export default function MyBooksPage() {
         throw new Error(data.message || "Failed to load books.");
       }
 
-      // Filter books added by Demo User
-      const myBooks = data.books.filter(
-        (book: Book) => book.userEmail === userEmail
-      );
-
-      setBooks(myBooks);
+      setBooks(data.books);
 
     } catch (error) {
       toast.error(
@@ -60,15 +66,15 @@ export default function MyBooksPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-  const loadBooks = async () => {
-    await fetchMyBooks();
-  };
-
-  loadBooks();
-}, []);
+  if (!isPending && userEmail) {
+    Promise.resolve().then(() => {
+      fetchMyBooks();
+    });
+  }
+}, [isPending, userEmail, fetchMyBooks]);
 
   // Open edit form
   const handleEdit = (book: Book) => {
@@ -99,12 +105,15 @@ export default function MyBooksPage() {
     if (!editBook) return;
 
     try {
+      const token = await getToken();
+
       const response = await fetch(
-        `http://localhost:8000/api/books/${editBook._id}`,
+        `${process.env.NEXT_PUBLIC_URL}/api/books/${editBook._id}`,
         {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(editBook),
         }
@@ -121,7 +130,7 @@ export default function MyBooksPage() {
       setShowEditForm(false);
       setEditBook(null);
 
-      fetchMyBooks();
+      await fetchMyBooks();
 
     } catch (error) {
       toast.error(
@@ -141,10 +150,15 @@ export default function MyBooksPage() {
   // Delete book
   const handleDelete = async () => {
     try {
+      const token = await getToken();
+
       const response = await fetch(
-        `http://localhost:8000/api/books/${deleteId}`,
+        `${process.env.NEXT_PUBLIC_URL}/api/books/${deleteId}`,
         {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -172,7 +186,7 @@ export default function MyBooksPage() {
     }
   };
 
-  if (loading) {
+  if (isPending || (loading && userEmail)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         Loading your books...

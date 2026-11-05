@@ -23,7 +23,7 @@ export default function NewArrivals() {
     const fetchNewArrivals = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8000/api/books/latest"
+          `${process.env.NEXT_PUBLIC_URL}/api/books/latest`
         );
 
         if (!response.ok) {
