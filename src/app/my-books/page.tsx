@@ -36,11 +36,53 @@ export default function MyBooksPage() {
 
   const userEmail = session?.user?.email || "";
 
-
   const fetchMyBooks = useCallback(async () => {
-    try {
-      setLoading(true);
+  try {
+    const token = await getToken();
 
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_URL}/api/books/my-books`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to load books.");
+    }
+
+    const booksArray = Array.isArray(data)
+      ? data
+      : Array.isArray(data.books)
+      ? data.books
+      : [];
+
+    setBooks(booksArray);
+
+  } catch (error) {
+    toast.error(
+      error instanceof Error
+        ? error.message
+        : "Something went wrong."
+    );
+
+    setBooks([]);
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
+useEffect(() => {
+  if (isPending || !userEmail) return;
+
+  let isActive = true;
+
+  const loadBooks = async () => {
+    try {
       const token = await getToken();
 
       const response = await fetch(
@@ -58,59 +100,43 @@ export default function MyBooksPage() {
         throw new Error(data.message || "Failed to load books.");
       }
 
-      setBooks(data.books);
+      const booksArray = Array.isArray(data)
+        ? data
+        : Array.isArray(data.books)
+        ? data.books
+        : [];
 
-    } catch (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-
-  useEffect(() => {
-  if (isPending || !userEmail) return;
-
-  const loadBooks = async () => {
-    try {
-      const token = await getToken();
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_URL}/api/books/my-books`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch your books");
+      if (isActive) {
+        setBooks(booksArray);
       }
 
-      const data = await response.json();
-      setBooks(data);
     } catch (error) {
-      console.error("Error fetching books:", error);
-      toast.error("Failed to load your books");
+      if (isActive) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Something went wrong."
+        );
+      }
     } finally {
-      setLoading(false);
+      if (isActive) {
+        setLoading(false);
+      }
     }
   };
 
   loadBooks();
+
+  return () => {
+    isActive = false;
+  };
 }, [isPending, userEmail]);
 
-
+  // Edit Book
   const handleEdit = (book: Book) => {
     setEditBook({ ...book });
     setShowEditForm(true);
   };
-
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -125,7 +151,7 @@ export default function MyBooksPage() {
     });
   };
 
-
+  // Update Book
   const handleUpdate = async (
     e: React.FormEvent<HTMLFormElement>
   ) => {
@@ -170,13 +196,13 @@ export default function MyBooksPage() {
     }
   };
 
- 
+  // Open Delete Modal
   const handleDeleteClick = (id: string) => {
     setDeleteId(id);
     setShowDeleteModal(true);
   };
 
-
+  // Delete Book
   const handleDelete = async () => {
     try {
       const token = await getToken();
@@ -197,8 +223,8 @@ export default function MyBooksPage() {
         throw new Error(data.message || "Failed to delete book.");
       }
 
-      setBooks(
-        books.filter((book) => book._id !== deleteId)
+      setBooks((previousBooks) =>
+        previousBooks.filter((book) => book._id !== deleteId)
       );
 
       toast.success("Book deleted successfully!");
@@ -215,14 +241,25 @@ export default function MyBooksPage() {
     }
   };
 
- 
-  if (isPending || (userEmail && loading)) {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <LoadingSpinner />
-    </div>
-  );
-}
+  // Loading
+ if (isPending || (userEmail && loading)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // Not Logged In
+  if (!userEmail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">
+          Please log in to manage your books.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -300,7 +337,7 @@ export default function MyBooksPage() {
         )}
       </div>
 
-     
+      {/* Edit Modal */}
       {showEditForm && editBook && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
 
@@ -416,7 +453,7 @@ export default function MyBooksPage() {
         </div>
       )}
 
-    
+      {/* Delete Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
 
