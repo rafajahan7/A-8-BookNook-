@@ -19,12 +19,12 @@ export default function ProfilePage() {
     }
   }, [isPending, session, router]);
 
-  // Show spinner while checking the user's session
+  
   if (isPending) {
     return <LoadingSpinner />;
   }
 
-  // Redirect unauthenticated users
+
   if (!session?.user) {
     return <LoadingSpinner />;
   }

@@ -71,7 +71,7 @@ function NavbarContent() {
 
         <div className="flex justify-between items-center h-20">
 
-          {/* Logo */}
+
           <Link
             href="/"
             className="flex items-center gap-2"
@@ -84,7 +84,7 @@ function NavbarContent() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
+
           <div className="hidden md:flex items-center gap-8">
 
             {navLinks
@@ -105,10 +105,10 @@ function NavbarContent() {
 
           </div>
 
-          {/* Login / Profile */}
+  
           <div className="hidden md:flex items-center gap-4">
 
-            {/* Theme Button */}
+
             <button
               onClick={toggleTheme}
               className="p-2 rounded-full text-[#173B57] dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
@@ -186,7 +186,7 @@ function NavbarContent() {
 
           </div>
 
-          {/* Mobile Buttons */}
+  
           <div className="flex items-center gap-3 md:hidden">
 
             <button
@@ -209,7 +209,7 @@ function NavbarContent() {
 
         </div>
 
-        {/* Mobile Navigation */}
+      
         {menuOpen && (
           <div className="md:hidden border-t border-gray-100 dark:border-gray-700 py-5">
 

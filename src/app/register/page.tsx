@@ -21,7 +21,7 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Password validation
+    
     if (!/[A-Z]/.test(password)) {
       setPasswordError("Password must contain at least one uppercase letter.");
       return;
@@ -69,7 +69,7 @@ export default function RegisterPage() {
 
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
 
-        {/* Logo */}
+  
         <Link href="/" className="flex items-center justify-center gap-2 mb-6">
           <div className="bg-[#173B57] p-3 rounded-xl">
             <BookOpen className="text-white" size={27} />
@@ -80,7 +80,7 @@ export default function RegisterPage() {
           </span>
         </Link>
 
-        {/* Heading */}
+  
         <div className="text-center mb-7">
           <h1 className="text-3xl font-bold text-gray-900">
             Create Account
@@ -91,10 +91,10 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Registration Form */}
+  
         <form onSubmit={handleRegister} className="space-y-4">
 
-          {/* Name */}
+  
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Full Name
@@ -110,7 +110,7 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Email */}
+   
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Email Address
@@ -126,7 +126,7 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Photo URL */}
+    
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Photo URL
@@ -141,7 +141,7 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Password */}
+        
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Password
@@ -170,7 +170,7 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          {/* Register Button */}
+          
           <button
             type="submit"
             disabled={loading}
@@ -181,7 +181,7 @@ export default function RegisterPage() {
 
         </form>
 
-        {/* Login Link */}
+       
         <p className="text-center text-gray-600 mt-6">
           Already have an account?{" "}
           <Link

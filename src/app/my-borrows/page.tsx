@@ -29,7 +29,7 @@ export default function MyBorrowsPage() {
   const { data: session, isPending } = authClient.useSession();
   const userEmail = session?.user?.email || "";
 
-  // Fetch borrowed books
+
   const fetchBorrows = useCallback(async () => {
     try {
       const token = await getToken();
@@ -63,7 +63,7 @@ export default function MyBorrowsPage() {
     }
   }, []);
 
-  // Load borrowed books
+
   useEffect(() => {
   if (isPending || !userEmail) return;
 
@@ -74,7 +74,7 @@ export default function MyBorrowsPage() {
   loadBorrows();
 }, [isPending, userEmail, fetchBorrows]);
 
-  // Return borrowed book
+
   const handleReturn = async (borrowId: string) => {
     setReturningId(borrowId);
 

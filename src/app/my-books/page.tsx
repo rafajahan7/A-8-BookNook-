@@ -36,7 +36,7 @@ export default function MyBooksPage() {
 
   const userEmail = session?.user?.email || "";
 
-  // Get user's books
+
   const fetchMyBooks = useCallback(async () => {
     try {
       setLoading(true);
@@ -71,7 +71,7 @@ export default function MyBooksPage() {
     }
   }, []);
 
-  // Check login status and fetch books
+
   useEffect(() => {
   if (isPending || !userEmail) return;
 
@@ -105,13 +105,13 @@ export default function MyBooksPage() {
   loadBooks();
 }, [isPending, userEmail]);
 
-  // Open edit form
+
   const handleEdit = (book: Book) => {
     setEditBook({ ...book });
     setShowEditForm(true);
   };
 
-  // Update form values
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -125,7 +125,7 @@ export default function MyBooksPage() {
     });
   };
 
-  // Save updated book
+
   const handleUpdate = async (
     e: React.FormEvent<HTMLFormElement>
   ) => {
@@ -170,13 +170,13 @@ export default function MyBooksPage() {
     }
   };
 
-  // Open delete confirmation
+ 
   const handleDeleteClick = (id: string) => {
     setDeleteId(id);
     setShowDeleteModal(true);
   };
 
-  // Delete book
+
   const handleDelete = async () => {
     try {
       const token = await getToken();
@@ -215,7 +215,7 @@ export default function MyBooksPage() {
     }
   };
 
-  // Show loading spinner
+ 
   if (isPending || (userEmail && loading)) {
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -300,7 +300,7 @@ export default function MyBooksPage() {
         )}
       </div>
 
-      {/* Edit Modal */}
+     
       {showEditForm && editBook && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
 
@@ -416,7 +416,7 @@ export default function MyBooksPage() {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+    
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
 

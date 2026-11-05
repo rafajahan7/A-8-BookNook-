@@ -9,7 +9,6 @@ export default function Footer() {
 
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
 
-          {/* BookNook Information */}
           <div>
             <Link href="/" className="mb-4 flex items-center gap-2">
               <span className="text-3xl">📚</span>
@@ -23,7 +22,6 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Quick Links */}
           <div>
             <h3 className="mb-5 text-lg font-semibold text-[#D9A65A]">
               Quick Links
@@ -56,20 +54,19 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact Information */}
+  
           <div>
             <h3 className="mb-5 text-lg font-semibold text-[#D9A65A]">
               Contact Us
             </h3>
 
             <ul className="space-y-4 text-sm text-gray-300">
-              <li>✉ support@booknook.com</li>
-              <li>☎ +880 1234-567890</li>
-              <li>📍 Dhaka, Bangladesh</li>
+              <li>support@booknook.com</li>
+              <li>+880 1234-567890</li>
+              <li>Dhaka, Bangladesh</li>
             </ul>
           </div>
 
-          {/* Social Media */}
           <div>
             <h3 className="mb-5 text-lg font-semibold text-[#D9A65A]">
               Follow Us
@@ -116,7 +113,7 @@ export default function Footer() {
 
         </div>
 
-        {/* Copyright */}
+       
         <div className="mt-12 border-t border-white/20 pt-6 text-center">
           <p className="text-sm text-gray-300">
             © 2026 BookNook. All rights reserved.

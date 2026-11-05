@@ -42,7 +42,7 @@ function BookDetailsContent() {
   const [showBorrowModal, setShowBorrowModal] = useState(false);
   const [borrowing, setBorrowing] = useState(false);
 
-  // Fetch book details
+ 
   const fetchBook = async () => {
     try {
       const response = await fetch(
@@ -68,7 +68,7 @@ function BookDetailsContent() {
     }
   };
 
-  // Load book details
+ 
   useEffect(() => {
     if (!id) return;
 
@@ -112,7 +112,7 @@ function BookDetailsContent() {
     };
   }, [id]);
 
-  // Open borrow modal
+ 
   const handleOpenBorrowModal = () => {
     if (!userEmail) {
       toast.error("Please log in before borrowing a book.");
@@ -127,7 +127,7 @@ function BookDetailsContent() {
     setShowBorrowModal(true);
   };
 
-  // Borrow book
+ 
   const handleBorrow = async () => {
     if (!book) return;
 
@@ -289,7 +289,7 @@ function BookDetailsContent() {
               </p>
             </div>
 
-            {/* Borrow Button */}
+            
             <button
               onClick={handleOpenBorrowModal}
               disabled={!isAvailable}
@@ -302,7 +302,7 @@ function BookDetailsContent() {
         </div>
       </div>
 
-      {/* Borrow Confirmation Modal */}
+      
       {showBorrowModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
 

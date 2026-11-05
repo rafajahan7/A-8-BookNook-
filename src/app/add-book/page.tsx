@@ -37,7 +37,7 @@ export default function AddBook() {
     });
   };
 
-  // Upload image to ImgBB through Express
+  
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -86,7 +86,7 @@ export default function AddBook() {
     }
   };
 
-  // Add a new book
+  
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>
   ) => {
@@ -160,7 +160,7 @@ export default function AddBook() {
     }
   };
 
-  // Show spinner while checking the login session
+  
   if (isPending) {
     return <LoadingSpinner />;
   }
@@ -239,7 +239,7 @@ export default function AddBook() {
               </select>
             </div>
 
-            {/* Total Copies */}
+           
             <div>
               <label className="mb-2 block font-medium text-gray-700">
                 Total Copies
@@ -262,7 +262,7 @@ export default function AddBook() {
               </p>
             </div>
 
-            {/* Image Upload */}
+           
             <div>
               <label className="mb-2 block font-medium text-gray-700">
                 Book Image
@@ -325,7 +325,7 @@ export default function AddBook() {
               />
             </div>
 
-            {/* User Information */}
+            
             <div className="border-t border-gray-200 pt-6">
               <h2 className="mb-4 text-lg font-semibold text-gray-900">
                 Added By
