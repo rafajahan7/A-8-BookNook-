@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface Book {
   _id: string;
@@ -98,10 +99,8 @@ function AllBooksContent() {
       </div>
 
       {loading ? (
-        <p className="text-center py-16 text-gray-500">
-          Loading books...
-        </p>
-      ) : error ? (
+  <LoadingSpinner />
+) : error ? (
         <p className="text-center py-16 text-red-600">
           {error}
         </p>

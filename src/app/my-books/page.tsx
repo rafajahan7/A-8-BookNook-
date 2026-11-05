@@ -6,6 +6,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { getToken } from "@/lib/getToken";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface Book {
   _id: string;
@@ -38,6 +39,8 @@ export default function MyBooksPage() {
   // Get user's books
   const fetchMyBooks = useCallback(async () => {
     try {
+      setLoading(true);
+
       const token = await getToken();
 
       const response = await fetch(
@@ -68,13 +71,39 @@ export default function MyBooksPage() {
     }
   }, []);
 
+  // Check login status and fetch books
   useEffect(() => {
-  if (!isPending && userEmail) {
-    Promise.resolve().then(() => {
-      fetchMyBooks();
-    });
-  }
-}, [isPending, userEmail, fetchMyBooks]);
+  if (isPending || !userEmail) return;
+
+  const loadBooks = async () => {
+    try {
+      const token = await getToken();
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_URL}/api/books/my-books`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch your books");
+      }
+
+      const data = await response.json();
+      setBooks(data);
+    } catch (error) {
+      console.error("Error fetching books:", error);
+      toast.error("Failed to load your books");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadBooks();
+}, [isPending, userEmail]);
 
   // Open edit form
   const handleEdit = (book: Book) => {
@@ -186,13 +215,14 @@ export default function MyBooksPage() {
     }
   };
 
-  if (isPending || (loading && userEmail)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading your books...
-      </div>
-    );
-  }
+  // Show loading spinner
+  if (isPending || (userEmail && loading)) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <LoadingSpinner />
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">

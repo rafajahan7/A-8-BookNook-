@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { UserRound, Mail, ArrowLeft, BookOpen } from "lucide-react";
 
 export default function ProfilePage() {
@@ -18,19 +19,20 @@ export default function ProfilePage() {
     }
   }, [isPending, session, router]);
 
-  if (isPending || !session?.user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-[#173B57]">Loading profile...</p>
-      </div>
-    );
+  // Show spinner while checking the user's session
+  if (isPending) {
+    return <LoadingSpinner />;
+  }
+
+  // Redirect unauthenticated users
+  if (!session?.user) {
+    return <LoadingSpinner />;
   }
 
   const user = session.user;
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
-
       <div className="max-w-3xl mx-auto">
 
         <Link
@@ -126,7 +128,6 @@ export default function ProfilePage() {
         </div>
 
       </div>
-
     </div>
   );
 }

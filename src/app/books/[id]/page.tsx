@@ -8,6 +8,7 @@ import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { getToken } from "@/lib/getToken";
 import { authClient } from "@/lib/auth-client";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface Book {
   _id: string;
@@ -45,8 +46,8 @@ function BookDetailsContent() {
   const fetchBook = async () => {
     try {
       const response = await fetch(
-  `${process.env.NEXT_PUBLIC_URL}/api/books/${id}`
-);
+        `${process.env.NEXT_PUBLIC_URL}/api/books/${id}`
+      );
 
       const data = await response.json();
 
@@ -76,8 +77,8 @@ function BookDetailsContent() {
     const loadBook = async () => {
       try {
         const response = await fetch(
-  `${process.env.NEXT_PUBLIC_URL}/api/books/${id}`
-);
+          `${process.env.NEXT_PUBLIC_URL}/api/books/${id}`
+        );
 
         const data = await response.json();
 
@@ -111,7 +112,7 @@ function BookDetailsContent() {
     };
   }, [id]);
 
-
+  // Borrow book
   const handleBorrow = async () => {
     if (!book) return;
 
@@ -152,7 +153,6 @@ function BookDetailsContent() {
       setShowBorrowModal(false);
 
       await fetchBook();
-
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -167,7 +167,7 @@ function BookDetailsContent() {
   if (loading || isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg">Loading book details...</p>
+        <LoadingSpinner />
       </div>
     );
   }
@@ -275,7 +275,6 @@ function BookDetailsContent() {
         </div>
       </div>
 
-
       {showBorrowModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
 
@@ -366,7 +365,7 @@ export default function BookDetailsPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
-          <p className="text-lg">Loading book details...</p>
+          <LoadingSpinner />
         </div>
       }
     >

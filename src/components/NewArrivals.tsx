@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface Book {
   _id: string;
@@ -69,9 +70,7 @@ export default function NewArrivals() {
       </div>
 
       {loading ? (
-        <p className="text-center text-gray-500">
-          Loading new arrivals...
-        </p>
+        <LoadingSpinner />
       ) : newArrivals.length === 0 ? (
         <p className="text-center text-gray-500">
           No books available yet.
@@ -97,7 +96,6 @@ export default function NewArrivals() {
               </div>
 
               <div className="mb-4">
-
                 <span className="text-xs font-semibold text-[#D9A65A] uppercase tracking-wider">
                   {book.category}
                 </span>
@@ -109,7 +107,6 @@ export default function NewArrivals() {
                 <p className="text-sm text-gray-500 mt-1">
                   By {book.author}
                 </p>
-
               </div>
 
               <Link

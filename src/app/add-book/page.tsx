@@ -5,9 +5,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { getToken } from "@/lib/getToken";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function AddBook() {
-
   const { data: session, isPending } = authClient.useSession();
 
   const userName = session?.user?.name || "";
@@ -26,7 +26,9 @@ export default function AddBook() {
   const [adding, setAdding] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     setBook({
       ...book,
@@ -55,12 +57,12 @@ export default function AddBook() {
       setUploadError("");
 
       const response = await fetch(
-  `${process.env.NEXT_PUBLIC_URL}/api/upload/image`,
-  {
-    method: "POST",
-    body: formData,
-  }
-);
+        `${process.env.NEXT_PUBLIC_URL}/api/upload/image`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const data = await response.json();
 
@@ -72,7 +74,6 @@ export default function AddBook() {
         ...previousBook,
         image: data.imageUrl,
       }));
-
     } catch (error) {
       setUploadError(
         error instanceof Error
@@ -84,9 +85,10 @@ export default function AddBook() {
     }
   };
 
-
   // Add a new book
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
 
     if (!session?.user || !userEmail) {
@@ -105,20 +107,20 @@ export default function AddBook() {
       const token = await getToken();
 
       const response = await fetch(
-  `${process.env.NEXT_PUBLIC_URL}/api/books`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      ...book,
-      userName: userName,
-      userEmail: userEmail,
-    }),
-  }
-);
+        `${process.env.NEXT_PUBLIC_URL}/api/books`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            ...book,
+            userName: userName,
+            userEmail: userEmail,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -137,7 +139,6 @@ export default function AddBook() {
       });
 
       setUploadError("");
-
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -149,6 +150,10 @@ export default function AddBook() {
     }
   };
 
+  // Show spinner while checking the login session
+  if (isPending) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="min-h-screen bg-[#f8f7f3] px-4 py-12">
@@ -234,14 +239,19 @@ export default function AddBook() {
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
-                disabled={uploading}
+                disabled={uploading || adding}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3"
               />
 
               {uploading && (
-                <p className="mt-2 text-sm text-amber-700">
-                  Uploading image...
-                </p>
+                <div className="mt-3 rounded-lg bg-amber-50 p-3">
+                  <div className="flex items-center justify-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-200 border-t-amber-700"></div>
+                  </div>
+                  <p className="mt-2 text-center text-sm text-amber-700">
+                    Uploading image, please wait...
+                  </p>
+                </div>
               )}
 
               {uploadError && (
@@ -288,7 +298,6 @@ export default function AddBook() {
               </h2>
 
               <div className="space-y-4">
-
                 <div>
                   <label className="mb-2 block font-medium text-gray-700">
                     User Name
@@ -314,17 +323,27 @@ export default function AddBook() {
                     className="w-full rounded-lg border border-gray-200 bg-gray-100 px-4 py-3 text-gray-600"
                   />
                 </div>
-
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={uploading || adding || isPending || !userEmail}
+              disabled={uploading || adding || !userEmail}
               className="w-full rounded-lg bg-amber-700 py-3 font-semibold text-white transition hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {adding ? "Adding Book..." : "Add Book"}
             </button>
+
+            {adding && (
+              <div className="rounded-lg bg-amber-50 p-3">
+                <div className="flex items-center justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-200 border-t-amber-700"></div>
+                </div>
+                <p className="mt-2 text-center text-sm text-amber-700">
+                  Adding your book, please wait...
+                </p>
+              </div>
+            )}
 
           </form>
         </div>

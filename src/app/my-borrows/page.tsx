@@ -7,6 +7,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { getToken } from "@/lib/getToken";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface Borrow {
   _id: string;
@@ -31,11 +32,6 @@ export default function MyBorrowsPage() {
   // Fetch borrowed books
   const fetchBorrows = useCallback(async () => {
     try {
-      if (!userEmail) {
-        setBorrows([]);
-        return;
-      }
-
       const token = await getToken();
 
       const response = await fetch(
@@ -65,18 +61,18 @@ export default function MyBorrowsPage() {
     } finally {
       setLoading(false);
     }
-  }, [userEmail]);
+  }, []);
 
   // Load borrowed books
   useEffect(() => {
-    if (isPending) return;
+  if (isPending || !userEmail) return;
 
-    const timer = setTimeout(() => {
-      fetchBorrows();
-    }, 0);
+  const loadBorrows = async () => {
+    await fetchBorrows();
+  };
 
-    return () => clearTimeout(timer);
-  }, [isPending, fetchBorrows]);
+  loadBorrows();
+}, [isPending, userEmail, fetchBorrows]);
 
   // Return borrowed book
   const handleReturn = async (borrowId: string) => {
@@ -116,12 +112,10 @@ export default function MyBorrowsPage() {
     }
   };
 
-  if (loading || isPending) {
+ if (isPending || (Boolean(userEmail) && loading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg">
-          Loading your borrowed books...
-        </p>
+        <LoadingSpinner />
       </div>
     );
   }
@@ -141,7 +135,7 @@ export default function MyBorrowsPage() {
         </div>
 
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          {borrows.length === 0 ? (
+          {(!userEmail || borrows.length === 0) ? (
             <div className="text-center py-16 px-4">
               <h2 className="text-xl font-semibold text-gray-800">
                 No Borrowed Books Yet

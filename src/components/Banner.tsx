@@ -2,6 +2,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const BannerSlider = dynamic(
   () => import("./BannerSlider"),
@@ -9,7 +10,11 @@ const BannerSlider = dynamic(
     ssr: false,
     loading: () => (
       <section className="mx-auto max-w-7xl px-4 pt-6">
-        <div className="min-h-[420px] rounded-2xl bg-[#173B57]"></div>
+        <div className="min-h-[420px] rounded-2xl bg-[#173B57] flex items-center justify-center">
+          <div className="text-white">
+            <LoadingSpinner />
+          </div>
+        </div>
       </section>
     ),
   }
