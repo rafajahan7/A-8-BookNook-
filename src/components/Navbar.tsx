@@ -10,17 +10,20 @@ import {
   X,
   ChevronDown,
   UserRound,
-  LogOut
+  LogOut,
+  Moon,
+  Sun
 } from "lucide-react";
 
+import { useTheme } from "next-themes";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 
 function NavbarContent() {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
 
-  // Get the actual logged-in user's session
   const { data: session, isPending } = authClient.useSession();
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -36,7 +39,6 @@ function NavbarContent() {
     { name: "My Borrows", href: "/my-borrows", private: true }
   ];
 
-  // Logout function
   const handleLogout = async () => {
     try {
       const { error } = await authClient.signOut();
@@ -59,8 +61,12 @@ function NavbarContent() {
     }
   };
 
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
+    <nav className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
 
         <div className="flex justify-between items-center h-20">
@@ -73,7 +79,7 @@ function NavbarContent() {
           >
             <BookOpen size={32} className="text-[#D9A65A]" />
 
-            <span className="text-2xl font-bold text-[#173B57]">
+            <span className="text-2xl font-bold text-[#173B57] dark:text-white">
               BookNook
             </span>
           </Link>
@@ -90,7 +96,7 @@ function NavbarContent() {
                   className={`font-medium transition ${
                     pathname === link.href
                       ? "text-[#D9A65A]"
-                      : "text-[#173B57] hover:text-[#D9A65A]"
+                      : "text-[#173B57] dark:text-gray-200 hover:text-[#D9A65A]"
                   }`}
                 >
                   {link.name}
@@ -102,11 +108,20 @@ function NavbarContent() {
           {/* Login / Profile */}
           <div className="hidden md:flex items-center gap-4">
 
+            {/* Theme Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full text-[#173B57] dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              aria-label="Change theme"
+            >
+              {theme === "dark" ? <Sun size={22} /> : <Moon size={22} />}
+            </button>
+
             {!isPending && !isLoggedIn && (
               <>
                 <Link
                   href="/login"
-                  className="font-semibold text-[#173B57] hover:text-[#D9A65A] transition"
+                  className="font-semibold text-[#173B57] dark:text-white hover:text-[#D9A65A] transition"
                 >
                   Login
                 </Link>
@@ -125,7 +140,7 @@ function NavbarContent() {
 
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
-                  className="flex items-center gap-2 text-[#173B57] font-medium"
+                  className="flex items-center gap-2 text-[#173B57] dark:text-white font-medium"
                 >
                   {session.user.image ? (
                     <img
@@ -145,19 +160,19 @@ function NavbarContent() {
                 </button>
 
                 {profileOpen && (
-                  <div className="absolute right-0 mt-3 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-2">
+                  <div className="absolute right-0 mt-3 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 py-2">
 
                     <Link
                       href="/profile"
                       onClick={() => setProfileOpen(false)}
-                      className="block px-4 py-3 text-sm text-gray-700 hover:bg-[#F5F3EF]"
+                      className="block px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-[#F5F3EF] dark:hover:bg-gray-700"
                     >
                       My Profile
                     </Link>
 
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-[#F5F3EF]"
+                      className="flex items-center gap-2 w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-[#F5F3EF] dark:hover:bg-gray-700"
                     >
                       <LogOut size={16} />
                       Logout
@@ -171,20 +186,32 @@ function NavbarContent() {
 
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-[#173B57]"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
-          >
-            {menuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
+          {/* Mobile Buttons */}
+          <div className="flex items-center gap-3 md:hidden">
+
+            <button
+              onClick={toggleTheme}
+              className="p-2 text-[#173B57] dark:text-white"
+              aria-label="Change theme"
+            >
+              {theme === "dark" ? <Sun size={22} /> : <Moon size={22} />}
+            </button>
+
+            <button
+              className="text-[#173B57] dark:text-white"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+
+          </div>
 
         </div>
 
         {/* Mobile Navigation */}
         {menuOpen && (
-          <div className="md:hidden border-t border-gray-100 py-5">
+          <div className="md:hidden border-t border-gray-100 dark:border-gray-700 py-5">
 
             <div className="flex flex-col gap-4">
 
@@ -198,7 +225,7 @@ function NavbarContent() {
                     className={`font-medium ${
                       pathname === link.href
                         ? "text-[#D9A65A]"
-                        : "text-[#173B57]"
+                        : "text-[#173B57] dark:text-gray-200"
                     }`}
                   >
                     {link.name}
@@ -206,12 +233,12 @@ function NavbarContent() {
                 ))}
 
               {!isPending && !isLoggedIn && (
-                <div className="flex flex-col gap-3 pt-3 border-t border-gray-100">
+                <div className="flex flex-col gap-3 pt-3 border-t border-gray-100 dark:border-gray-700">
 
                   <Link
                     href="/login"
                     onClick={() => setMenuOpen(false)}
-                    className="font-semibold text-[#173B57]"
+                    className="font-semibold text-[#173B57] dark:text-white"
                   >
                     Login
                   </Link>
@@ -228,7 +255,7 @@ function NavbarContent() {
               )}
 
               {isLoggedIn && (
-                <div className="pt-3 border-t border-gray-100">
+                <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
 
                   <div className="flex items-center gap-3 mb-3">
                     {session.user.image ? (
@@ -238,10 +265,10 @@ function NavbarContent() {
                         className="w-10 h-10 rounded-full object-cover"
                       />
                     ) : (
-                      <UserRound size={24} className="text-[#173B57]" />
+                      <UserRound size={24} className="text-[#173B57] dark:text-white" />
                     )}
 
-                    <span className="font-medium text-[#173B57]">
+                    <span className="font-medium text-[#173B57] dark:text-white">
                       {session.user.name || "User"}
                     </span>
                   </div>
@@ -249,7 +276,7 @@ function NavbarContent() {
                   <Link
                     href="/profile"
                     onClick={() => setMenuOpen(false)}
-                    className="block py-2 text-[#173B57]"
+                    className="block py-2 text-[#173B57] dark:text-gray-200"
                   >
                     My Profile
                   </Link>

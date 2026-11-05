@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface Book {
@@ -79,8 +80,13 @@ export default function NewArrivals() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
 
           {newArrivals.map((book) => (
-            <div
+            <motion.div
               key={book._id}
+              whileHover={{
+                y: -8,
+                scale: 1.02,
+              }}
+              transition={{ duration: 0.3 }}
               className="bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-lg transition duration-300"
             >
 
@@ -116,7 +122,7 @@ export default function NewArrivals() {
                 View Details
               </Link>
 
-            </div>
+            </motion.div>
           ))}
 
         </div>
