@@ -141,3 +141,40 @@ html.dark {
 html:not(.dark) {
   color-scheme: light;
 }
+
+
+/* Dark mode form fields */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #1f2937;
+  color: white;
+  border-color: #4b5563;
+}
+
+/* Placeholder text */
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* Dropdown options */
+.dark select option {
+  background-color: #1f2937;
+  color: white;
+}
+
+/* Focus effect */
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #D9A65A;
+  outline: none;
+}
+
+/* Light mode form fields */
+html:not(.dark) input,
+html:not(.dark) textarea,
+html:not(.dark) select {
+  color: #173B57;
+}
